@@ -1,0 +1,44 @@
+version: '2.4'
+
+networks:
+  finnet:
+    driver: bridge
+    name: finnet
+    ipam:
+      config:
+        - subnet: 172.31.255.0/29
+
+services:
+  mongodb:
+    image: mongo:4.2-rc
+    container_name: mongodb
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+    networks:
+      finnet:
+        ipv4_address: 172.31.255.3
+    environment:
+        MONGO_INITDB_ROOT_USERNAME: 
+        MONGO_INITDB_ROOT_PASSWORD: 
+    volumes:
+        - ./db:/data/db
+  finbot:
+    build: 
+      context: ./
+      dockerfile: ./Dockerfile
+    image: finbot:latest
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+    networks:
+      finnet:
+        ipv4_address: 172.31.255.2
+    extra_hosts:
+      mongodb: 172.31.255.3
