@@ -1,10 +1,10 @@
 # Telegram token
 TELEGRAM_TOKEN = ''
 
-# Permitted users
+# List of IDs of permitted users
 USERS = []
 
-# Maximum value length
+# Maximum value length for spendings entry
 MAX_INPUT_LEN = 
 
 # Maximum comment length
@@ -34,7 +34,7 @@ COMMENT_ASK_MSG = ''
 # Google spreadsheet name
 GOOGLE_SPREADSHEET = ''
 
-# Categories to choose
+# Categories to choose. Populate with a list of strings
 CATEGORIES = []
 
 # Cancel button text

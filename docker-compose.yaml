@@ -22,8 +22,8 @@ services:
       finnet:
         ipv4_address: 172.31.255.3
     environment:
-        MONGO_INITDB_ROOT_USERNAME: 
-        MONGO_INITDB_ROOT_PASSWORD: 
+        MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME}"
+        MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD}"
     volumes:
         - ./db:/data/db
   finbot:
