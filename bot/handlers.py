@@ -4,7 +4,7 @@ import pymongo
 import os
 import csv
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from oauth2client.service_account import ServiceAccountCredentials as SAC
 
 from telegram.ext import ConversationHandler
 from settings import (
@@ -26,60 +26,63 @@ def add_start(update, context):
     if amount is False:
         update.message.reply_text(ERROR_VALUE_MSG)
         return ConversationHandler.END
-    
+
     current_date = f'{datetime.datetime.now():%Y.%m.%d}'
-    
-    timestamp = str(datetime.datetime.utcnow().timestamp()).replace('.','')
-    
+
+    timestamp = str(datetime.datetime.utcnow().timestamp()).replace('.', '')
+
     context.user_data['entry'] = {
         '_id': timestamp,
         'user_id': update.effective_user.id, 'amount': amount,
         'date': current_date
     }
-    
-    update.message.reply_text(CATEGORY_ASK_MSG, reply_markup=category_keyboard())
-    
+
+    update.message.reply_text(
+        CATEGORY_ASK_MSG, reply_markup=category_keyboard()
+    )
+
     return get_category
 
 
 def get_category(update, context):
     category = update.message.text
-    
+
     if category not in CATEGORIES:
-        update.message.reply_text(ERROR_CATEGORY_MSG, reply_markup=category_keyboard())
+        update.message.reply_text(
+            ERROR_CATEGORY_MSG, reply_markup=category_keyboard()
+        )
         return get_category
-        
+
     context.user_data['entry'].update({'category': category})
-    
+
     update.message.reply_text(COMMENT_ASK_MSG, reply_markup=comment_keyboard())
-    
+
     return get_comment
-    
-    
+
+
 def get_comment(update, context):
     comment = update.message.text
     if len(comment) > MAX_COMMENT_LEN:
-        update.message.reply_text(ERROR_COMMENT_MSG, reply_markup=cancel_keyboard())
+        update.message.reply_text(
+            ERROR_COMMENT_MSG, reply_markup=cancel_keyboard()
+        )
         return get_comment
-    
+
     if comment == NO_COMMENT_CAPTION:
         context.user_data['entry'].update({'comment': ''})
     else:
         context.user_data['entry'].update({'comment': comment})
-    
 
-        
-    transaction_id = collection.insert_one(context.user_data['entry'])    
+    transaction_id = collection.insert_one(context.user_data['entry'])
 
-    
     update.message.reply_text(
         SUCCESS_MESSAGE, reply_markup=telegram.ReplyKeyboardRemove()
     )
-    
+
     context.user_data.pop('entry', None)
-    
+
     export_to_google()
-    
+
     return ConversationHandler.END
 
 
@@ -89,6 +92,7 @@ def operation_cancel(update, context):
         CANCEL_MESSAGE, reply_markup=telegram.ReplyKeyboardRemove()
     )
     return ConversationHandler.END
+
 
 def get_last_30(update, context):
     data_array = get_some_db_data()
@@ -112,7 +116,7 @@ def get_last_30(update, context):
     update.message.reply_text(message)
 
 
-def get_this_month(update,context):
+def get_this_month(update, context):
     data_array = get_some_db_data()
 
     output_data = {}
@@ -121,8 +125,8 @@ def get_this_month(update,context):
     for entry in data_array:
         this_month = f'{datetime.datetime.now():%Y.%m}'
         entry_month = (
-            entry.get('date').split('.')[0] 
-            + '.' 
+            entry.get('date').split('.')[0]
+            + '.'
             + entry.get('date').split('.')[1]
         )
         if this_month == entry_month:
@@ -134,7 +138,7 @@ def get_this_month(update,context):
 
 def compile_csv():
     data_array = get_full_db_data()
-    
+
     csv_columns = ['_id', 'user_id', 'amount', 'date', 'category', 'comment']
     csv_file = "/tmp/report.csv"
     with open(csv_file, 'w') as csvfile:
@@ -144,9 +148,9 @@ def compile_csv():
             writer.writerow(data)
 
 
-def export_to_csv(update,context):
+def export_to_csv(update, context):
     compile_csv()
-    
+
     update.message.reply_document(open('/tmp/report.csv', 'rb'))
     os.remove('/tmp/report.csv')
 
@@ -154,17 +158,17 @@ def export_to_csv(update,context):
 def export_to_google():
     if not os.path.exists('/bot/client_secret.json'):
         return
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('/bot/client_secret.json', SCOPE)
+    credentials = SAC.from_json_keyfile_name('/bot/client_secret.json', SCOPE)
     client = gspread.authorize(credentials)
-    
+
     spreadsheet = client.open(GOOGLE_SPREADSHEET)
-    
+
     compile_csv()
-    
+
     with open('/tmp/report.csv', 'rb') as file_obj:
         content = file_obj.read()
         client.import_csv(spreadsheet.id, data=content)
-        
+
     os.remove('/tmp/report.csv')
     return
 
@@ -172,7 +176,7 @@ def export_to_google():
 def get_full_db_data():
     raw_data = collection.find()
     data_array = []
-    
+
     for elem in raw_data:
         data_array.append(elem)
 
@@ -180,7 +184,7 @@ def get_full_db_data():
 
 
 def get_some_db_data():
-    raw_data = collection.find({},{
+    raw_data = collection.find({}, {
         '_id': 0, 'user_id': 0, 'comment': 0,
     })
 
@@ -198,6 +202,10 @@ db = client['main']
 collection = db['spendings']
 
 SCOPE = (
-    ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
-    "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
+        [
+            'https://spreadsheets.google.com/feeds',
+            'https://www.googleapis.com/auth/spreadsheets',
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/drive'
+        ]
     )
