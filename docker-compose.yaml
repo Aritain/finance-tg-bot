@@ -6,7 +6,7 @@ networks:
     name: finnet
     ipam:
       config:
-        - subnet: 172.31.255.0/29
+        - subnet: 172.31.253.0/29
 
 services:
   mongodb:
@@ -20,7 +20,7 @@ services:
         max-file: "2"
     networks:
       finnet:
-        ipv4_address: 172.31.255.3
+        ipv4_address: 172.31.253.3
     environment:
         MONGO_INITDB_ROOT_USERNAME: "${MONGO_INITDB_ROOT_USERNAME}"
         MONGO_INITDB_ROOT_PASSWORD: "${MONGO_INITDB_ROOT_PASSWORD}"
@@ -39,6 +39,6 @@ services:
         max-file: "2"
     networks:
       finnet:
-        ipv4_address: 172.31.255.2
+        ipv4_address: 172.31.253.2
     extra_hosts:
-      mongodb: 172.31.255.3
+      mongodb: 172.31.253.3
