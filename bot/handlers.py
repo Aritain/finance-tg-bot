@@ -4,8 +4,10 @@ import pymongo
 import os
 import csv
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials as SAC
+import threading
 
+
+from oauth2client.service_account import ServiceAccountCredentials as SAC
 from telegram.ext import ConversationHandler
 from settings import (
     ERROR_VALUE_MSG, CATEGORY_ASK_MSG, SUCCESS_MESSAGE,
@@ -81,7 +83,8 @@ def get_comment(update, context):
 
     context.user_data.pop('entry', None)
 
-    export_to_google()
+    google_export = threading.Thread(target=export_to_google, args=( ))
+    google_export.start()
 
     return ConversationHandler.END
 
