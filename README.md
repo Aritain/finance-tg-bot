@@ -23,7 +23,7 @@ To get the bot running simply clone this repo and follow these steps:
 	
 ## Notes
 
-Just a few things you need to know about this storage in general:
+Just a few things you need to know about this service in general:
 * Please expect bugs here, the whole thing was made for my personal usage mostly, but if you'll follow steps described above it should work on your machine too.
 * If you want to use "/" command add the following to your bot via botfather
 	```
